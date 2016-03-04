@@ -8,6 +8,8 @@ package abohawa;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,6 +20,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -58,25 +61,6 @@ public class WeatherTab {
         weatherPanel.add(cityInputLabel);
         weatherPanel.add(cityInputField);
 
-        cityButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    String cityname = cityInputField.getText();
-                    Fetch ft = new Fetch(cityname);
-
-                    weather = ft.getJSON();
-
-                    System.out.println(weather);
-                    renderWeather();
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(WeatherTab.class.getName()).log(Level.SEVERE, null, ex);
-                }
-
-            }
-        });
-
         weatherPanel.add(cityButton);
         weatherPanel.add(cityLabel);
         weatherPanel.add(updatedText);
@@ -89,52 +73,69 @@ public class WeatherTab {
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+
+        cityButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                String cityname = cityInputField.getText();
+                System.out.println(cityname);
+                updateWeatherData(cityname);
+
+            }
+        });
     }
 
-    public void renderWeather() {
+    private void renderWeather(JSONObject json) {
+
         try {
 
-            cityLabel.setText("Sylhet");
+            cityLabel.setText(json.getString("name").toUpperCase(Locale.US)
+                    + ", "
+                    + json.getJSONObject("sys").getString("country"));
 
-            //cityLabel.setText(weather.getString("name").toUpperCase(Locale.US));
+    
         } catch (Exception e) {
-            System.out.println("Error setting text");
         }
     }
 
-    class Fetch implements Runnable {
+    private void updateWeatherData(final String city) {
+        new Thread() {
+            public void run() {
+                final JSONObject json = RemoteFetch.getJSON(city);
+                System.out.println("Main thread");
 
-        Thread t;
-        private String cityName;
-        JSONObject json;
+                if (json == null) {
+                    System.out.println("Error");
+                    new Thread() {
+                        public void run() {
 
-        public Fetch(String city) throws InterruptedException {
+                            System.out.println("Child thread");
+                        }
+                    }.start();
 
-            cityName = city;
-            t = new Thread(this, "Get Data Thread");
+                } else {
 
-            t.start();
+                    System.out.println(json);
 
-        }
+                    new Thread() {
+                        public void run() {
+                            try {
+                                String city = json.getString("name").toUpperCase();
 
-        @Override
-        public void run() {
+                                System.out.println("Child thread");
+                                System.out.println(city);
+                                renderWeather(json);
+                            } catch (JSONException ex) {
+                                Logger.getLogger(WeatherTab.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
+                    }.start();
 
-            System.out.println("run()");
-            try {
-                System.out.println("Fetcing Start");
-                json = RemoteFetch.getJSON(cityName);
-                System.out.println(json);
-                renderWeather();
+                }
 
-            } catch (Exception e) {
-                System.out.println("Error fetching");
             }
-
-        }
-
-        JSONObject getJSON() {
-            return json;
-        }
+        }.start();
     }
 }
