@@ -17,6 +17,8 @@ import org.json.JSONObject;
  */
 public class RemoteFetch {
 
+    
+    
    
 
     private static final String OPEN_WEATHER_MAP_API
@@ -44,10 +46,10 @@ public class RemoteFetch {
             JSONObject data = new JSONObject(json.toString());
 
             if (data.getInt("cod") != 200) {
-
+                 System.out.println("No Data");
                 return null;
             }
-            System.out.println("Data " + data);
+      
 
             return data;
 

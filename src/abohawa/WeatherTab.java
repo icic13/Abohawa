@@ -9,7 +9,8 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Locale;
-import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -25,18 +26,19 @@ import org.json.JSONObject;
  */
 public class WeatherTab {
 
-    private JFrame frame;
-    private JPanel weatherPanel;
-    private JLabel cityLabel;
-    private JLabel updatedText;
-    private JLabel weatherIcon;
-    private JLabel temperature;
-    private JLabel detail;
-    private JLabel cityInputLabel;
+    private final JFrame frame;
+    private final JPanel weatherPanel;
+    private final JLabel cityLabel;
+    private final JLabel updatedText;
+    private final JLabel weatherIcon;
+    private final JLabel temperature;
+    private final JLabel detail;
+    private final JLabel cityInputLabel;
     private JTextField cityInputField;
-    private JButton cityButton;
+    private final JButton cityButton;
+    private JSONObject weather;
 
-    private BoxLayout boxLayout;
+    private final BoxLayout boxLayout;
 
     WeatherTab() {
 
@@ -60,15 +62,17 @@ public class WeatherTab {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                String cityname = cityInputField.getText();
-                System.out.println("City name = " + cityname);
-                System.out.println("Running action performed: " + e);
+                try {
+                    String cityname = cityInputField.getText();
+                    Fetch ft = new Fetch(cityname);
 
-                FetchThread ft = new FetchThread(cityname);
+                    weather = ft.getJSON();
 
-                System.out.println(ft.getJSON());
-
-                renderWeather(ft.getJSON());
+                    System.out.println(weather);
+                    renderWeather();
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(WeatherTab.class.getName()).log(Level.SEVERE, null, ex);
+                }
 
             }
         });
@@ -87,11 +91,50 @@ public class WeatherTab {
         frame.setVisible(true);
     }
 
-    public void renderWeather(JSONObject json) {
+    public void renderWeather() {
         try {
-            cityLabel.setText(json.getString("name").toUpperCase(Locale.US));
+
+            cityLabel.setText("Sylhet");
+
+            //cityLabel.setText(weather.getString("name").toUpperCase(Locale.US));
         } catch (Exception e) {
             System.out.println("Error setting text");
+        }
+    }
+
+    class Fetch implements Runnable {
+
+        Thread t;
+        private String cityName;
+        JSONObject json;
+
+        public Fetch(String city) throws InterruptedException {
+
+            cityName = city;
+            t = new Thread(this, "Get Data Thread");
+
+            t.start();
+
+        }
+
+        @Override
+        public void run() {
+
+            System.out.println("run()");
+            try {
+                System.out.println("Fetcing Start");
+                json = RemoteFetch.getJSON(cityName);
+                System.out.println(json);
+                renderWeather();
+
+            } catch (Exception e) {
+                System.out.println("Error fetching");
+            }
+
+        }
+
+        JSONObject getJSON() {
+            return json;
         }
     }
 }
