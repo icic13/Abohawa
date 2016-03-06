@@ -80,7 +80,7 @@ public class WeatherTab {
             public void actionPerformed(ActionEvent e) {
 
                 String cityname = cityInputField.getText();
-                System.out.println(cityname);
+
                 updateWeatherData(cityname);
 
             }
@@ -90,30 +90,35 @@ public class WeatherTab {
     private void renderWeather(JSONObject json) {
 
         try {
-
-            cityLabel.setText(json.getString("name").toUpperCase(Locale.US)
-                    + ", "
-                    + json.getJSONObject("sys").getString("country"));
-
-    
-        } catch (Exception e) {
+            String cityFieldText = json.getString("name").toUpperCase(Locale.US)
+                    + ", " + json.getJSONObject("sys").getString("country");
+            System.out.println("render " + json);
+            JSONObject details = json.getJSONArray("weather").getJSONObject(0);
+            JSONObject main = json.getJSONObject("main");
+            String temp = main.getDouble("temp") + " ℃";
+            
+            DateFormat df = DateFormat.getDateTimeInstance();
+            String updatedOn = df.format(new Date(json.getLong("dt")*1000));
+            
+            cityLabel.setText(cityFieldText);
+            updatedText.setText("Last update "+updatedOn);
+            weatherIcon.setText("Weather Icon");
+            temperature.setText(temp);
+            detail.setText("d");
+        } catch (JSONException ex) {
+            Logger.getLogger(WeatherTab.class.getName()).log(Level.SEVERE, null, ex);
         }
+
     }
 
     private void updateWeatherData(final String city) {
         new Thread() {
             public void run() {
                 final JSONObject json = RemoteFetch.getJSON(city);
-                System.out.println("Main thread");
+                System.out.println("Update  thread");
 
                 if (json == null) {
-                    System.out.println("Error");
-                    new Thread() {
-                        public void run() {
-
-                            System.out.println("Child thread");
-                        }
-                    }.start();
+                    System.out.println("Error  updating");
 
                 } else {
 
@@ -121,15 +126,8 @@ public class WeatherTab {
 
                     new Thread() {
                         public void run() {
-                            try {
-                                String city = json.getString("name").toUpperCase();
+                            renderWeather(json);
 
-                                System.out.println("Child thread");
-                                System.out.println(city);
-                                renderWeather(json);
-                            } catch (JSONException ex) {
-                                Logger.getLogger(WeatherTab.class.getName()).log(Level.SEVERE, null, ex);
-                            }
                         }
                     }.start();
 
