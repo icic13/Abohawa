@@ -32,7 +32,7 @@ import org.json.JSONObject;
  * @author rana
  */
 public class WeatherTab {
-
+    
     private final JFrame frame;
     private final JPanel weatherPanel;
     private final JLabel cityLabel;
@@ -44,13 +44,13 @@ public class WeatherTab {
     private JTextField cityInputField;
     private final JButton cityButton;
     private JSONObject weather;
-
+    
     private final BoxLayout boxLayout;
-
+    
     WeatherTab() {
-
+        
         cityButton = new JButton("ok");
-
+        
         cityInputLabel = new JLabel("শহরের নাম:");
         cityInputField = new JTextField(12);
         cityLabel = new JLabel();
@@ -64,89 +64,90 @@ public class WeatherTab {
         weatherPanel.setBorder(new EmptyBorder(new Insets(150, 200, 150, 200)));
         weatherPanel.add(cityInputLabel);
         weatherPanel.add(cityInputField);
-
+        
         weatherPanel.add(cityButton);
         weatherPanel.add(cityLabel);
         weatherPanel.add(updatedText);
-        weatherPanel.add(weatherIcon);
+        
         weatherPanel.add(temperature);
         weatherPanel.add(detail);
+        weatherPanel.add(weatherIcon);
         frame = new JFrame("অাবহাওয়া");
         frame.add(weatherPanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
+      
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
-
+        
         cityButton.addActionListener(new ActionListener() {
-
+            
             @Override
             public void actionPerformed(ActionEvent e) {
-
+                
                 String cityname = cityInputField.getText();
-
+                
                 updateWeatherData(cityname);
-
+                
             }
         });
     }
-
+    
     private void renderWeather(JSONObject json) {
-
+        
         try {
             String cityFieldText = json.getString("name").toUpperCase(Locale.US)
                     + ", " + json.getJSONObject("sys").getString("country");
-
+            
             JSONObject details = json.getJSONArray("weather").getJSONObject(0);
             JSONObject main = json.getJSONObject("main");
             String temp = main.getDouble("temp") + " ℃";
-
+            
             DateFormat df = DateFormat.getDateTimeInstance();
             String updatedOn = df.format(new Date(json.getLong("dt") * 1000));
-
+            
             String detailText = details.getString("description").toUpperCase(Locale.US)
                     + "\n" + " Humidity: " + main.get("humidity") + "%"
                     + "\n" + " Pressure: " + main.get("pressure") + " hPa";
             int id = details.getInt("id");
             cityLabel.setText(cityFieldText);
             updatedText.setText("Last update " + updatedOn);
-
+            
             temperature.setText(temp);
             detail.setText(detailText);
             setWeatherIcon(id);
         } catch (JSONException ex) {
             Logger.getLogger(WeatherTab.class.getName()).log(Level.SEVERE, null, ex);
         }
-
+        
     }
-
+    
     private void updateWeatherData(final String city) {
         new Thread() {
             public void run() {
                 final JSONObject json = RemoteFetch.getJSON(city);
                 System.out.println("Update  thread");
-
+                
                 if (json == null) {
                     System.out.println("Error  updating");
-
+                    
                 } else {
-
+                    
                     System.out.println(json);
-
+                    
                     new Thread() {
                         public void run() {
                             renderWeather(json);
-
+                            
                         }
                     }.start();
-
+                    
                 }
-
+                
             }
         }.start();
     }
-
+    
     private void setWeatherIcon(int id) {
         String icon = "";
         if (id >= 200 && id <= 232) {
@@ -174,7 +175,7 @@ public class WeatherTab {
         } else if (id == 804) {
             icon = "04";
         }
-
+        
         try {
             URL url = new URL("http://openweathermap.org/img/w/" + icon + "d.png");
             Image image = ImageIO.read(url);
