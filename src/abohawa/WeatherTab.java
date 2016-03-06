@@ -5,15 +5,19 @@
  */
 package abohawa;
 
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.URL;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -96,15 +100,19 @@ public class WeatherTab {
             JSONObject details = json.getJSONArray("weather").getJSONObject(0);
             JSONObject main = json.getJSONObject("main");
             String temp = main.getDouble("temp") + " ℃";
-            
+
             DateFormat df = DateFormat.getDateTimeInstance();
-            String updatedOn = df.format(new Date(json.getLong("dt")*1000));
-            
+            String updatedOn = df.format(new Date(json.getLong("dt") * 1000));
+            System.out.println("Main " + main);
+            String detailText = details.getString("description").toUpperCase(Locale.US)
+                    + "\n" + " Humidity: " + main.get("humidity") + "%"
+                    + "\n" + " Pressure: " + main.get("pressure") + " hPa";
             cityLabel.setText(cityFieldText);
-            updatedText.setText("Last update "+updatedOn);
-            weatherIcon.setText("Weather Icon");
+            updatedText.setText("Last update " + updatedOn);
+
             temperature.setText(temp);
-            detail.setText("d");
+            detail.setText(detailText);
+            setWeatherIcon();
         } catch (JSONException ex) {
             Logger.getLogger(WeatherTab.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -135,5 +143,16 @@ public class WeatherTab {
 
             }
         }.start();
+    }
+
+    private void setWeatherIcon() {
+
+        try {
+            URL url = new URL("http://openweathermap.org/img/w/10d.png");
+            Image image = ImageIO.read(url);
+            weatherIcon.setIcon(new ImageIcon(image));
+        } catch (Exception e) {
+            System.out.println("Error");
+        }
     }
 }
