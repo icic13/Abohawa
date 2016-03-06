@@ -53,11 +53,11 @@ public class WeatherTab {
 
         cityInputLabel = new JLabel("শহরের নাম:");
         cityInputField = new JTextField(12);
-        cityLabel = new JLabel("City Label");
-        updatedText = new JLabel("UPdated Text");
-        weatherIcon = new JLabel("Weather Icon");
-        temperature = new JLabel("Temperature");
-        detail = new JLabel("Detail");
+        cityLabel = new JLabel();
+        updatedText = new JLabel();
+        weatherIcon = new JLabel();
+        temperature = new JLabel();
+        detail = new JLabel();
         weatherPanel = new JPanel();
         boxLayout = new BoxLayout(weatherPanel, BoxLayout.Y_AXIS);
         weatherPanel.setLayout(boxLayout);
@@ -74,6 +74,7 @@ public class WeatherTab {
         frame = new JFrame("অাবহাওয়া");
         frame.add(weatherPanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
@@ -96,23 +97,24 @@ public class WeatherTab {
         try {
             String cityFieldText = json.getString("name").toUpperCase(Locale.US)
                     + ", " + json.getJSONObject("sys").getString("country");
-            System.out.println("render " + json);
+
             JSONObject details = json.getJSONArray("weather").getJSONObject(0);
             JSONObject main = json.getJSONObject("main");
             String temp = main.getDouble("temp") + " ℃";
 
             DateFormat df = DateFormat.getDateTimeInstance();
             String updatedOn = df.format(new Date(json.getLong("dt") * 1000));
-            System.out.println("Main " + main);
+
             String detailText = details.getString("description").toUpperCase(Locale.US)
                     + "\n" + " Humidity: " + main.get("humidity") + "%"
                     + "\n" + " Pressure: " + main.get("pressure") + " hPa";
+            int id = details.getInt("id");
             cityLabel.setText(cityFieldText);
             updatedText.setText("Last update " + updatedOn);
 
             temperature.setText(temp);
             detail.setText(detailText);
-            setWeatherIcon();
+            setWeatherIcon(id);
         } catch (JSONException ex) {
             Logger.getLogger(WeatherTab.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -145,10 +147,36 @@ public class WeatherTab {
         }.start();
     }
 
-    private void setWeatherIcon() {
+    private void setWeatherIcon(int id) {
+        String icon = "";
+        if (id >= 200 && id <= 232) {
+            icon = "11";
+        } else if (id >= 300 && id <= 321) {
+            icon = "09";
+        } else if (id >= 500 && id <= 504) {
+            icon = "10";
+        } else if (id == 511) {
+            icon = "13";
+        } else if (id >= 520 && id <= 521 || id == 531) {
+            icon = "09";
+        } else if (id >= 600 && id <= 622) {
+            icon = "13";
+        } else if (id >= 700 && id <= 781) {
+            icon = "50";
+        } else if (id == 800) {
+            icon = "01";
+        } else if (id == 801) {
+            icon = "02";
+        } else if (id == 802) {
+            icon = "03";
+        } else if (id == 803) {
+            icon = "04";
+        } else if (id == 804) {
+            icon = "04";
+        }
 
         try {
-            URL url = new URL("http://openweathermap.org/img/w/10d.png");
+            URL url = new URL("http://openweathermap.org/img/w/" + icon + "d.png");
             Image image = ImageIO.read(url);
             weatherIcon.setIcon(new ImageIcon(image));
         } catch (Exception e) {
