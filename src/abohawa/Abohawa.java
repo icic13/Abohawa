@@ -1,7 +1,5 @@
 package abohawa;
 
-
-
 /**
  *
  * @author Md. Rana Mahmud
@@ -13,8 +11,7 @@ public class Abohawa {
      */
     public static void main(String[] args) {
 
-    WeatherTab myWeather = new WeatherTab();
-      
+        WeatherTab myWeather = new WeatherTab();
 
     }
 

@@ -9,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import javax.swing.JOptionPane;
 import org.json.JSONObject;
 
 /**
@@ -46,7 +47,10 @@ public class RemoteFetch {
             JSONObject data = new JSONObject(json.toString());
 
             if (data.getInt("cod") != 200) {
-                 System.out.println("No Data");
+               JOptionPane.showMessageDialog(null,
+                            "Information not found.",
+                            "Not Found",
+                            JOptionPane.INFORMATION_MESSAGE);
                 return null;
             }
       
