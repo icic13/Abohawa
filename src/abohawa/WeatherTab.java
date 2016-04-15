@@ -5,6 +5,7 @@
  */
 package abohawa;
 
+import com.google.gson.Gson;
 import java.awt.Component;
 import java.awt.Image;
 import java.awt.Insets;
@@ -70,7 +71,6 @@ public class WeatherTab {
         cityInputLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         cityButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        
         //Adding items to panel
         weatherPanel.add(cityInputLabel);
         weatherPanel.add(cityInputField);
@@ -84,7 +84,7 @@ public class WeatherTab {
         cityLabel.setEditable(false);
         temperature.setEditable(false);
         updatedText.setEditable(false);
-        
+
         frame.add(weatherPanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
@@ -102,22 +102,26 @@ public class WeatherTab {
 
                 int length = cityName.length();
                 if (length == 0) {
+                    cityButton.setEnabled(false);
                     JOptionPane.showMessageDialog(null,
                             "Please enter city name.",
                             "Error",
                             JOptionPane.ERROR_MESSAGE);
+                    cityButton.setEnabled(true);
 
                 } else if (cityName.replaceAll("\\s", "").length() == 0) {
                     JOptionPane.showMessageDialog(null, "Please enter a city name.", "City name", JOptionPane.ERROR_MESSAGE);
                 } else {
                     cityName = cityName.replaceAll("\\s", "");
+
                     updateWeatherData(cityName);
+
                 }
 
             }
         });
     }
-    
+
     //rendering the weather
     private void renderWeather(JSONObject json) {
 
@@ -147,26 +151,36 @@ public class WeatherTab {
             Logger.getLogger(WeatherTab.class.getName()).log(Level.SEVERE, null, ex);
         }
 
+        cityButton.setEnabled(true);
+
     }
 
     private void updateWeatherData(final String city) {
+        Gson gson = new Gson();
+        cityButton.setEnabled(false);
 
         new Thread() {
             public void run() {
 
                 final JSONObject json = RemoteFetch.getJSON(city);
+
                 if (json == null) {
 
                     JOptionPane.showMessageDialog(null,
                             "Check Your Internet Connection.",
                             "No Internet",
                             JOptionPane.ERROR_MESSAGE);
+                    cityButton.setEnabled(true);
 
                 } else {
 
                     new Thread() {
                         public void run() {
+
+                            String weatherString = json.toString();
+                            WeatherData cityData = gson.fromJson(weatherString, WeatherData.class);
                             renderWeather(json);
+                            System.out.println(cityData.main);
 
                         }
                     }.start();
@@ -175,6 +189,7 @@ public class WeatherTab {
 
             }
         }.start();
+
     }
 
     //Weather Icon
