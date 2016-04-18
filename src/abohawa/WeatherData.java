@@ -5,6 +5,15 @@
  */
 package abohawa;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.LineNumberReader;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author rana
@@ -22,7 +31,7 @@ public final class WeatherData {
     public final Sys sys;
     public final String base;
     public final Wind wind;
-
+ 
     public WeatherData(long dt, Coord coord, Weather[] weather, String name, long cod, Main main, Clouds clouds, long id, Sys sys, String base, Wind wind) {
         this.dt = dt;
         this.coord = coord;
@@ -35,6 +44,31 @@ public final class WeatherData {
         this.sys = sys;
         this.base = base;
         this.wind = wind;
+     
+    }
+
+    public void writeData() {
+        Date date = new Date();
+        String line = dt + "#" + coord.lon + "#" + coord.lat + "#"
+                + weather[0].icon + "#" + weather[0].description
+                + "#" + weather[0].icon + "#" + weather[0].id
+                + "#" + id + "#" + name + "#" + cod
+                + "#" + main.temp
+                + "#" + main.temp_min + "#" + main.grnd_level + "#"
+                + main.humidity + "#" + main.pressure + "#" + main.sea_level + "#" + main.temp_max
+                + "#" + clouds.all + "#" + id
+                + "#" + sys.country + "#" + sys.sunrise + "#" + sys.sunset + "#" + sys.message
+                + "#" + base + "#" + wind.deg
+                + "#" + wind.speed + "#" + date.toString() + "\n";
+        try {
+            FileWriter fileWriter = new FileWriter("data.txt", true);
+            BufferedWriter bufferedWrite = new BufferedWriter(fileWriter);
+            bufferedWrite.append(line);
+            bufferedWrite.close();
+        } catch (IOException ex) {
+            Logger.getLogger(WeatherData.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
     }
 
     public static final class Coord {
@@ -110,7 +144,7 @@ public final class WeatherData {
 
     public static final class Wind {
 
-        public final long deg;
+        public final double deg;
         public final double speed;
 
         public Wind(long deg, double speed) {
@@ -118,4 +152,5 @@ public final class WeatherData {
             this.speed = speed;
         }
     }
+
 }

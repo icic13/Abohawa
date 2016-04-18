@@ -11,6 +11,12 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.util.Date;
@@ -92,6 +98,13 @@ public class WeatherTab {
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
 
+        try {
+            FileReader fileReader = new FileReader("data.txt");
+
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(WeatherTab.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
         //Action Listener
         cityButton.addActionListener(new ActionListener() {
 
@@ -122,6 +135,29 @@ public class WeatherTab {
         });
     }
 
+    //Render from file
+    public void renderFromFile(String[] data) {
+
+        String cityFieldText = data[8].toUpperCase(Locale.US)
+                + ", " + data[19];
+        String temp = data[11] + " ℃";
+        DateFormat df = DateFormat.getDateTimeInstance();
+        long value = Long.parseLong(data[0]);
+        String updatedOn = df.format(new Date(value * 1000));
+        String detailText = data[4].toUpperCase(Locale.US)
+                + "\n" + "Humidity: " + data[13] + "%"
+                + "\n" + "Pressure: " + data[14] + " hPa";
+        int id = Integer.parseInt(data[0]);
+        cityLabel.setText(cityFieldText);
+        updatedText.setText("Last updated \n" + updatedOn);
+        temperature.setText(temp);
+        detail.setText(detailText);
+
+        int number = Integer.parseInt(data[6]);
+        setWeatherIcon(number);
+
+    }
+
     //rendering the weather
     private void renderWeather(JSONObject json) {
 
@@ -137,8 +173,8 @@ public class WeatherTab {
             String updatedOn = df.format(new Date(json.getLong("dt") * 1000));
 
             String detailText = details.getString("description").toUpperCase(Locale.US)
-                    + "\n" + " Humidity: " + main.get("humidity") + "%"
-                    + "\n" + " Pressure: " + main.get("pressure") + " hPa";
+                    + "\n" + "Humidity: " + main.get("humidity") + "%"
+                    + "\n" + "Pressure: " + main.get("pressure") + " hPa";
             int id = details.getInt("id");
             cityLabel.setText(cityFieldText);
             updatedText.setText("Last updated \n" + updatedOn);
@@ -147,6 +183,7 @@ public class WeatherTab {
 
             detail.setText(detailText);
             setWeatherIcon(id);
+
         } catch (JSONException ex) {
             Logger.getLogger(WeatherTab.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -178,9 +215,11 @@ public class WeatherTab {
                         public void run() {
 
                             String weatherString = json.toString();
+
                             WeatherData cityData = gson.fromJson(weatherString, WeatherData.class);
                             renderWeather(json);
-                            System.out.println(cityData.main);
+
+                            cityData.writeData();
 
                         }
                     }.start();
@@ -220,14 +259,35 @@ public class WeatherTab {
         } else if (id == 804) {
             icon = "04";
         }
+        Image image = null;
+        try {
+
+            System.out.println("Local");
+            File file = new File(icon + "d.png");
+
+            image = ImageIO.read(file);
+
+        } catch (Exception e) {
+            System.out.println("Local errror");
+
+        }
+        System.out.println("Net");
 
         try {
             URL url = new URL("http://openweathermap.org/img/w/" + icon + "d.png");
-            Image image = ImageIO.read(url);
-            weatherIcon.setIcon(new ImageIcon(image));
-            weatherIcon.setAlignmentX(Component.CENTER_ALIGNMENT);
-        } catch (Exception e) {
-            // System.out.println("Error");
+
+            image = ImageIO.read(url);
+            File outFile = new File(icon + "d.png");
+            ImageIO.write((RenderedImage) image, "png", outFile);
+
+        } catch (IOException ex) {
+            System.out.println("Net error");
         }
+        try {
+            weatherIcon.setIcon(new ImageIcon(image));
+        } catch (Exception e) {
+            System.out.println("error");
+        }
+        weatherIcon.setAlignmentX(Component.CENTER_ALIGNMENT);
     }
 }
