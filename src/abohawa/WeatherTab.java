@@ -7,6 +7,7 @@ package abohawa;
 
 import com.google.gson.Gson;
 import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -25,6 +26,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -55,9 +58,9 @@ public class WeatherTab {
     private JTextField cityInputField;
     private JSONObject weather;
     private final BoxLayout boxLayout;
+    private final JButton historyButton;
 
-    WeatherTab() {
-        //Declaration
+    WeatherTab() {    //Declaration
         cityButton = new JButton("Ok");
         cityInputLabel = new JLabel("Enter City Name:");
         cityInputField = new JTextField(20);
@@ -68,6 +71,7 @@ public class WeatherTab {
         detail = new JTextArea(3, 20);
         weatherPanel = new JPanel();
         frame = new JFrame("অাবহাওয়া");
+        historyButton = new JButton("History");
 
         //Box Layout
         boxLayout = new BoxLayout(weatherPanel, BoxLayout.Y_AXIS);
@@ -76,16 +80,20 @@ public class WeatherTab {
 
         cityInputLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         cityButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        historyButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         //Adding items to panel
         weatherPanel.add(cityInputLabel);
         weatherPanel.add(cityInputField);
+
         weatherPanel.add(cityButton);
+        weatherPanel.add(historyButton);
         weatherPanel.add(cityLabel);
         weatherPanel.add(temperature);
         weatherPanel.add(detail);
         weatherPanel.add(updatedText);
         weatherPanel.add(weatherIcon);
+
         detail.setEditable(false);
         cityLabel.setEditable(false);
         temperature.setEditable(false);
@@ -104,6 +112,14 @@ public class WeatherTab {
         } catch (FileNotFoundException ex) {
             Logger.getLogger(WeatherTab.class.getName()).log(Level.SEVERE, null, ex);
         }
+        historyButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                HistoryClass histry = new HistoryClass();
+
+            }
+        });
 
         //Action Listener
         cityButton.addActionListener(new ActionListener() {
