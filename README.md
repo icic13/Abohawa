@@ -1,1 +1,2 @@
-# Abohawa A weather application using openweather api. This application is a project for CSE 298 Object Oriented Programming Language Lab . Programming Language is Java. 
+# Abohawa A weather application 
+Abohawa A weather desktop application using openweather api. This application is a project for CSE 298 Object Oriented Programming Language Lab . Programming Language is Java. I have use gson  and jsonobject library for json parsing. Using this you can get weather of any location and weather  history . A java thread is used to fetch data in the background from website.
