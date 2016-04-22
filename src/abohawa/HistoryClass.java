@@ -76,10 +76,10 @@ public class HistoryClass extends JFrame {
         this.setLocationRelativeTo(null);
 
         table.getColumnModel().getColumn(0).setPreferredWidth(150);
+        table.getColumnModel().getColumn(1).setPreferredWidth(120);
 
-        this.setSize(750, 300);
+        this.setSize(800, 300);
         this.setVisible(true);
-        
 
     }
 
