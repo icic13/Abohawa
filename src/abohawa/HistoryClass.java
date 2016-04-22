@@ -69,6 +69,7 @@ public class HistoryClass extends JFrame {
 
         //Table
         JTable table = new JTable(data, columns);
+        
         table.getColumnModel().getColumn(0).setPreferredWidth(50);
         this.add(new JScrollPane(table));
         this.setTitle("Wether history");
